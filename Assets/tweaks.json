@@ -1,0 +1,540 @@
+{
+  "schema": 1,
+  "presets": {
+    "Standard": [ "restore-point", "activity-history", "consumer-features", "folder-discovery", "wpbt", "location", "services-manual", "telemetry", "delivery-optimization", "disk-cleanup", "temp-files", "end-task", "device-companion-apps" ],
+    "Minimal": [ "consumer-features", "wpbt", "services-manual", "telemetry" ],
+    "Advanced": [ "restore-point", "activity-history", "consumer-features", "folder-discovery", "wpbt", "location", "services-manual", "telemetry", "delivery-optimization", "temp-files", "end-task", "store-search", "classic-start", "widgets", "onedrive", "windows-ai", "classic-context-menu" ]
+  },
+  "tweaks": [
+    {
+      "id": "restore-point", "group": "essential", "kind": "action",
+      "name": "Create a restore point",
+      "description": "Makes a System Restore point before anything else runs, so you can roll the whole PC back from Windows' recovery options. Turns System Restore on for the Windows drive if it was off.",
+      "registry": [
+        { "path": "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\SystemRestore", "name": "SystemRestorePointCreationFrequency", "type": "DWord", "on": "0", "off": "1440" }
+      ]
+    },
+    {
+      "id": "activity-history", "group": "essential",
+      "name": "Turn off Activity History",
+      "description": "Stops Windows recording the apps, files and sites you use for the Timeline and for Microsoft. Clipboard history keeps working.",
+      "registry": [
+        { "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\System", "name": "EnableActivityFeed", "type": "DWord", "on": "1", "off": null },
+        { "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\System", "name": "PublishUserActivities", "type": "DWord", "on": "0", "off": null },
+        { "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\System", "name": "UploadUserActivities", "type": "DWord", "on": "0", "off": null }
+      ]
+    },
+    {
+      "id": "consumer-features", "group": "essential",
+      "name": "Stop suggested apps installing themselves",
+      "description": "Turns off Windows' consumer features, which download promoted games and apps (Candy Crush and friends) into the Start menu.",
+      "registry": [
+        { "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\CloudContent", "name": "DisableWindowsConsumerFeatures", "type": "DWord", "on": "1", "off": null }
+      ]
+    },
+    {
+      "id": "folder-discovery", "group": "essential", "kind": "action", "restart": "signout",
+      "name": "Stop Explorer guessing folder types",
+      "description": "Clears Explorer's saved folder views and sets every folder to the plain General items layout, so big folders stop opening slowly as Pictures or Music. Sign out to see it."
+    },
+    {
+      "id": "wpbt", "group": "essential",
+      "name": "Block firmware-installed programs (WPBT)",
+      "description": "Stops the PC's firmware handing Windows a program to run at every start (used by some makers for bloatware and anti-theft tools).",
+      "registry": [
+        { "path": "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Session Manager", "name": "DisableWpbtExecution", "type": "DWord", "on": "1", "off": null }
+      ]
+    },
+    {
+      "id": "location", "group": "essential",
+      "name": "Turn off location tracking",
+      "description": "Denies location access for every app, turns off the location sensor and service, and stops automatic map updates.",
+      "registry": [
+        { "path": "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\CapabilityAccessManager\\ConsentStore\\location", "name": "Value", "type": "String", "on": "Deny", "off": "Allow" },
+        { "path": "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Sensor\\Overrides\\{BFA794E4-F964-4FDB-90F6-51056BFE4B44}", "name": "SensorPermissionState", "type": "DWord", "on": "0", "off": "1" },
+        { "path": "HKLM\\SYSTEM\\Maps", "name": "AutoUpdateEnabled", "type": "DWord", "on": "0", "off": "1" }
+      ],
+      "services": [ { "name": "lfsvc", "on": "Disabled", "off": "Manual" } ]
+    },
+    {
+      "id": "services-manual", "group": "essential",
+      "name": "Trim background services",
+      "description": "Sets a handful of services that rarely earn their keep to start only when needed, or not at all: Offline Files, the telemetry service, the Maps downloader, Storage Service and Internet Connection Sharing.",
+      "services": [
+        { "name": "CscService", "on": "Disabled", "off": "Manual" },
+        { "name": "DiagTrack", "on": "Disabled", "off": "Automatic" },
+        { "name": "MapsBroker", "on": "Manual", "off": "Automatic" },
+        { "name": "StorSvc", "on": "Manual", "off": "Automatic" },
+        { "name": "SharedAccess", "on": "Disabled", "off": "Automatic" }
+      ]
+    },
+    {
+      "id": "telemetry", "group": "essential",
+      "name": "Turn off telemetry",
+      "description": "Cuts Windows' diagnostic data to the minimum, turns off the advertising ID, tailored experiences, online speech and inking personalisation, feedback prompts, Defender sample uploads and PowerShell 7 telemetry, and disables the telemetry and error reporting services.",
+      "registry": [
+        { "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\AdvertisingInfo", "name": "Enabled", "type": "DWord", "on": "0", "off": null },
+        { "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Privacy", "name": "TailoredExperiencesWithDiagnosticDataEnabled", "type": "DWord", "on": "0", "off": null },
+        { "path": "HKCU\\Software\\Microsoft\\Speech_OneCore\\Settings\\OnlineSpeechPrivacy", "name": "HasAccepted", "type": "DWord", "on": "0", "off": null },
+        { "path": "HKCU\\Software\\Microsoft\\Input\\TIPC", "name": "Enabled", "type": "DWord", "on": "0", "off": null },
+        { "path": "HKCU\\Software\\Microsoft\\InputPersonalization", "name": "RestrictImplicitInkCollection", "type": "DWord", "on": "1", "off": null },
+        { "path": "HKCU\\Software\\Microsoft\\InputPersonalization", "name": "RestrictImplicitTextCollection", "type": "DWord", "on": "1", "off": null },
+        { "path": "HKCU\\Software\\Microsoft\\InputPersonalization\\TrainedDataStore", "name": "HarvestContacts", "type": "DWord", "on": "0", "off": null },
+        { "path": "HKCU\\Software\\Microsoft\\Personalization\\Settings", "name": "AcceptedPrivacyPolicy", "type": "DWord", "on": "0", "off": null },
+        { "path": "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\DataCollection", "name": "AllowTelemetry", "type": "DWord", "on": "0", "off": null },
+        { "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "name": "Start_TrackProgs", "type": "DWord", "on": "0", "off": null },
+        { "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\System", "name": "PublishUserActivities", "type": "DWord", "on": "0", "off": null },
+        { "path": "HKCU\\Software\\Microsoft\\Siuf\\Rules", "name": "NumberOfSIUFInPeriod", "type": "DWord", "on": "0", "off": null },
+        { "path": "HKCU\\Software\\Microsoft\\Siuf\\Rules", "name": "PeriodInNanoSeconds", "type": "DWord", "on": null, "off": null }
+      ],
+      "services": [
+        { "name": "DiagTrack", "on": "Disabled", "off": "Automatic" },
+        { "name": "WerSvc", "on": "Disabled", "off": "Manual" }
+      ]
+    },
+    {
+      "id": "delivery-optimization", "group": "essential",
+      "name": "Stop sharing updates with other PCs",
+      "description": "Turns off Delivery Optimization, so Windows downloads updates only from Microsoft and never uploads them to other computers.",
+      "registry": [
+        { "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\DeliveryOptimization", "name": "DODownloadMode", "type": "DWord", "on": "0", "off": null }
+      ]
+    },
+    {
+      "id": "device-companion-apps", "group": "essential",
+      "name": "Stop device companion apps downloading",
+      "description": "Stops Windows fetching maker apps and icons from the internet when you plug in a new device (mice, headsets, printers).",
+      "registry": [
+        { "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\Device Metadata", "name": "PreventDeviceMetadataFromNetwork", "type": "DWord", "on": "1", "off": null }
+      ]
+    },
+    {
+      "id": "hibernation", "group": "essential",
+      "name": "Turn off hibernation",
+      "description": "Deletes hiberfil.sys (often several GB) and removes Hibernate from the power menu. Good for desktops; laptops may want to keep it.",
+      "registry": [
+        { "path": "HKLM\\System\\CurrentControlSet\\Control\\Session Manager\\Power", "name": "HibernateEnabled", "type": "DWord", "on": "0", "off": "1" },
+        { "path": "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FlyoutMenuSettings", "name": "ShowHibernateOption", "type": "DWord", "on": "0", "off": "1" }
+      ]
+    },
+    {
+      "id": "end-task", "group": "essential", "restart": "explorer",
+      "name": "Add End task to taskbar right-click",
+      "description": "Right-click an app on the taskbar and choose End task to close it at once, without opening Task Manager.",
+      "registry": [
+        { "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced\\TaskbarDeveloperSettings", "name": "TaskbarEndTask", "type": "DWord", "on": "1", "off": null }
+      ]
+    },
+    {
+      "id": "classic-start", "group": "essential", "restart": "explorer",
+      "name": "Use the previous Start menu layout",
+      "description": "Brings back the Start menu layout from before the 2025 redesign (pinned apps on top, no huge All apps list).",
+      "registry": [
+        { "path": "HKLM\\SYSTEM\\ControlSet001\\Control\\FeatureManagement\\Overrides\\8\\3036241548", "name": "EnabledState", "type": "DWord", "on": "1", "off": null }
+      ]
+    },
+    {
+      "id": "store-search", "group": "essential",
+      "name": "Remove Store results from Start search",
+      "description": "Stops the Start menu search padding results with Microsoft Store suggestions, by locking the Store's local search database.",
+      "probe": "store-search"
+    },
+    {
+      "id": "widgets", "group": "essential", "kind": "action", "restart": "explorer",
+      "name": "Remove Widgets",
+      "description": "Uninstalls the Widgets board (news, weather and ads on the taskbar) for every user. Undo reinstalls it from the Microsoft Store."
+    },
+    {
+      "id": "bitlocker", "group": "essential", "kind": "action",
+      "name": "Turn off BitLocker on the Windows drive",
+      "description": "Decrypts the Windows drive. It runs in the background and can take a while. Only do this if you know you don't need drive encryption; undo encrypts it again.",
+      "caution": "Your drive will no longer be encrypted."
+    },
+    {
+      "id": "disk-cleanup", "group": "essential", "kind": "action",
+      "name": "Run Disk Cleanup",
+      "description": "Runs Windows' Disk Cleanup on the Windows drive and cleans up superseded update components. Can take several minutes; old updates can't be uninstalled afterwards."
+    },
+    {
+      "id": "temp-files", "group": "essential", "kind": "action",
+      "name": "Delete temporary files",
+      "description": "Empties your Temp folder and Windows' Temp folder. Files that are in use are skipped."
+    },
+
+    {
+      "id": "onedrive", "group": "advanced", "kind": "action", "restart": "explorer",
+      "name": "Remove OneDrive",
+      "description": "Uninstalls OneDrive and its leftovers. Files already in your local OneDrive folder stay where they are (the folder is protected while the uninstaller runs). Undo reinstalls it.",
+      "caution": "Files that live only in the cloud are not downloaded first."
+    },
+    {
+      "id": "edge-remove", "group": "advanced", "kind": "action",
+      "name": "Remove Microsoft Edge",
+      "description": "Runs Edge's own uninstaller at system level. Some Windows features open web content in Edge, and Windows Update may bring it back. Undo reinstalls it with winget.",
+      "caution": "Unsupported by Microsoft."
+    },
+    {
+      "id": "edge-debloat", "group": "advanced",
+      "name": "Debloat Microsoft Edge",
+      "description": "Policies that turn off Edge's shopping assistant, Collections, rewards, sidebar widgets, first-run pages, recommendations, feedback and diagnostic data, and stop it adding a desktop shortcut.",
+      "registry": [
+        { "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\EdgeUpdate", "name": "CreateDesktopShortcutDefault", "type": "DWord", "on": "0", "off": null },
+        { "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Edge", "name": "PersonalizationReportingEnabled", "type": "DWord", "on": "0", "off": null },
+        { "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Edge\\ExtensionInstallBlocklist", "name": "1", "type": "String", "on": "ofefcgjbeghpigppfmkologfjadafddi", "off": null },
+        { "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Edge", "name": "ShowRecommendationsEnabled", "type": "DWord", "on": "0", "off": null },
+        { "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Edge", "name": "HideFirstRunExperience", "type": "DWord", "on": "1", "off": null },
+        { "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Edge", "name": "UserFeedbackAllowed", "type": "DWord", "on": "0", "off": null },
+        { "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Edge", "name": "ConfigureDoNotTrack", "type": "DWord", "on": "1", "off": null },
+        { "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Edge", "name": "AlternateErrorPagesEnabled", "type": "DWord", "on": "0", "off": null },
+        { "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Edge", "name": "EdgeCollectionsEnabled", "type": "DWord", "on": "0", "off": null },
+        { "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Edge", "name": "EdgeShoppingAssistantEnabled", "type": "DWord", "on": "0", "off": null },
+        { "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Edge", "name": "MicrosoftEdgeInsiderPromotionEnabled", "type": "DWord", "on": "0", "off": null },
+        { "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Edge", "name": "ShowMicrosoftRewards", "type": "DWord", "on": "0", "off": null },
+        { "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Edge", "name": "WebWidgetAllowed", "type": "DWord", "on": "0", "off": null },
+        { "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Edge", "name": "DiagnosticData", "type": "DWord", "on": "0", "off": null },
+        { "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Edge", "name": "EdgeAssetDeliveryServiceEnabled", "type": "DWord", "on": "0", "off": null },
+        { "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Edge", "name": "WalletDonationEnabled", "type": "DWord", "on": "0", "off": null },
+        { "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Edge", "name": "DefaultBrowserSettingsCampaignEnabled", "type": "DWord", "on": "0", "off": null }
+      ]
+    },
+    {
+      "id": "brave-debloat", "group": "advanced",
+      "name": "Debloat Brave",
+      "description": "Policies that turn off Brave Rewards, Wallet, VPN, the AI chat, News, Talk, Tor windows, usage pings and metrics.",
+      "registry": [
+        { "path": "HKLM\\SOFTWARE\\Policies\\BraveSoftware\\Brave", "name": "BraveRewardsDisabled", "type": "DWord", "on": "1", "off": null },
+        { "path": "HKLM\\SOFTWARE\\Policies\\BraveSoftware\\Brave", "name": "BraveWalletDisabled", "type": "DWord", "on": "1", "off": null },
+        { "path": "HKLM\\SOFTWARE\\Policies\\BraveSoftware\\Brave", "name": "BraveVPNDisabled", "type": "DWord", "on": "1", "off": null },
+        { "path": "HKLM\\SOFTWARE\\Policies\\BraveSoftware\\Brave", "name": "BraveAIChatEnabled", "type": "DWord", "on": "0", "off": null },
+        { "path": "HKLM\\SOFTWARE\\Policies\\BraveSoftware\\Brave", "name": "BraveStatsPingEnabled", "type": "DWord", "on": "0", "off": null },
+        { "path": "HKLM\\SOFTWARE\\Policies\\BraveSoftware\\Brave", "name": "BraveNewsDisabled", "type": "DWord", "on": "1", "off": null },
+        { "path": "HKLM\\SOFTWARE\\Policies\\BraveSoftware\\Brave", "name": "BraveTalkDisabled", "type": "DWord", "on": "1", "off": null },
+        { "path": "HKLM\\SOFTWARE\\Policies\\BraveSoftware\\Brave", "name": "TorDisabled", "type": "DWord", "on": "1", "off": null },
+        { "path": "HKLM\\SOFTWARE\\Policies\\BraveSoftware\\Brave", "name": "BraveP3AEnabled", "type": "DWord", "on": "0", "off": null },
+        { "path": "HKLM\\SOFTWARE\\Policies\\BraveSoftware\\Brave", "name": "UrlKeyedAnonymizedDataCollectionEnabled", "type": "DWord", "on": "0", "off": null },
+        { "path": "HKLM\\SOFTWARE\\Policies\\BraveSoftware\\Brave", "name": "SafeBrowsingExtendedReportingEnabled", "type": "DWord", "on": "0", "off": null },
+        { "path": "HKLM\\SOFTWARE\\Policies\\BraveSoftware\\Brave", "name": "MetricsReportingEnabled", "type": "DWord", "on": "0", "off": null }
+      ]
+    },
+    {
+      "id": "windows-ai", "group": "advanced", "kind": "action",
+      "name": "Turn off and remove Windows AI",
+      "description": "Removes Copilot and the Microsoft 365 Copilot hub, turns off Recall and the AI fabric service, hides the AI components settings page and turns off AI features in Notepad.",
+      "registry": [
+        { "path": "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\Explorer", "name": "SettingsPageVisibility", "type": "String", "on": "hide:aicomponents", "off": null },
+        { "path": "HKLM\\SOFTWARE\\Policies\\WindowsNotepad", "name": "DisableAIFeatures", "type": "DWord", "on": "1", "off": null }
+      ]
+    },
+    {
+      "id": "classic-context-menu", "group": "advanced", "restart": "explorer",
+      "name": "Use the full right-click menu",
+      "description": "Brings back the Windows 10 style right-click menu in Explorer, without the Show more options step.",
+      "registry": [
+        { "path": "HKCU\\Software\\Classes\\CLSID\\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\\InprocServer32", "name": "", "type": "String", "on": "", "off": null }
+      ]
+    },
+    {
+      "id": "home-gallery", "group": "advanced", "restart": "explorer",
+      "name": "Hide Home and Gallery in Explorer",
+      "description": "Removes Home and Gallery from Explorer's side bar and makes new Explorer windows open on This PC.",
+      "registry": [
+        { "path": "HKCU\\Software\\Classes\\CLSID\\{f874310e-b6b7-47dc-bc84-b9e6b38f5903}", "name": "System.IsPinnedToNameSpaceTree", "type": "DWord", "on": "0", "off": null },
+        { "path": "HKCU\\Software\\Classes\\CLSID\\{e88865ea-0e1c-4e20-9aa6-edcd0212c87c}", "name": "System.IsPinnedToNameSpaceTree", "type": "DWord", "on": "0", "off": null },
+        { "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "name": "LaunchTo", "type": "DWord", "on": "1", "off": null }
+      ]
+    },
+    {
+      "id": "visual-effects", "group": "advanced", "restart": "signout",
+      "name": "Visual effects for best performance",
+      "description": "Turns off window animations, shadows, transparency effects, Aero Peek and translucent selection, shortens menu delays and hides the Chat button. Windows looks flatter but feels snappier.",
+      "registry": [
+        { "path": "HKCU\\Control Panel\\Desktop", "name": "DragFullWindows", "type": "String", "on": "0", "off": "1" },
+        { "path": "HKCU\\Control Panel\\Desktop", "name": "MenuShowDelay", "type": "String", "on": "200", "off": "400" },
+        { "path": "HKCU\\Control Panel\\Desktop", "name": "UserPreferencesMask", "type": "Binary", "on": "9012038010000000", "off": "9E1E078012000000" },
+        { "path": "HKCU\\Control Panel\\Desktop\\WindowMetrics", "name": "MinAnimate", "type": "String", "on": "0", "off": "1" },
+        { "path": "HKCU\\Control Panel\\Keyboard", "name": "KeyboardDelay", "type": "String", "on": "0", "off": "1" },
+        { "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "name": "ListviewAlphaSelect", "type": "DWord", "on": "0", "off": "1" },
+        { "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "name": "ListviewShadow", "type": "DWord", "on": "0", "off": "1" },
+        { "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "name": "TaskbarAnimations", "type": "DWord", "on": "0", "off": "1" },
+        { "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\VisualEffects", "name": "VisualFXSetting", "type": "DWord", "on": "3", "off": "1" },
+        { "path": "HKCU\\Software\\Microsoft\\Windows\\DWM", "name": "EnableAeroPeek", "type": "DWord", "on": "0", "off": "1" },
+        { "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "name": "TaskbarMn", "type": "DWord", "on": "0", "off": "1" }
+      ]
+    },
+    {
+      "id": "notifications", "group": "advanced",
+      "name": "Turn off notifications and the calendar flyout",
+      "description": "Removes the notification centre and the calendar from the clock, and stops toast pop-ups.",
+      "caution": "You won't see any app notifications.",
+      "registry": [
+        { "path": "HKCU\\Software\\Policies\\Microsoft\\Windows\\Explorer", "name": "DisableNotificationCenter", "type": "DWord", "on": "1", "off": null },
+        { "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\PushNotifications", "name": "ToastEnabled", "type": "DWord", "on": "0", "off": "1" }
+      ]
+    },
+    {
+      "id": "background-apps", "group": "advanced",
+      "name": "Stop Store apps running in the background",
+      "description": "Stops Microsoft Store apps running when you aren't using them. Some apps (mail, chat) then only update while open.",
+      "registry": [
+        { "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\BackgroundAccessApplications", "name": "GlobalUserDisabled", "type": "DWord", "on": "1", "off": "0" }
+      ]
+    },
+    {
+      "id": "storage-sense", "group": "advanced",
+      "name": "Turn off Storage Sense",
+      "description": "Stops Windows deleting files from Downloads and the Recycle Bin, and dehydrating OneDrive files, on its own.",
+      "registry": [
+        { "path": "HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\StorageSense\\Parameters\\StoragePolicy", "name": "01", "type": "DWord", "on": "0", "off": "1" }
+      ]
+    },
+    {
+      "id": "reserved-storage", "group": "advanced",
+      "name": "Turn off reserved storage",
+      "description": "Gives back the space (about 7 GB) Windows keeps aside for updates. Updates may then fail when the drive is nearly full."
+    },
+    {
+      "id": "search-indexing", "group": "advanced",
+      "name": "Turn off search indexing",
+      "description": "Stops the Windows Search indexer, which saves disk activity but makes Start and Explorer searches slower.",
+      "services": [ { "name": "WSearch", "on": "Disabled", "off": "AutomaticDelayed" } ]
+    },
+    {
+      "id": "svchost-split", "group": "advanced", "restart": "reboot",
+      "name": "Group services into fewer svchost processes",
+      "description": "Raises the memory threshold above your installed RAM so Windows runs related services together instead of one svchost.exe each. Task Manager shows far fewer processes; a crash can then take several services down at once.",
+      "probe": "svchost-split"
+    },
+    {
+      "id": "utc-clock", "group": "advanced",
+      "name": "Keep the hardware clock in UTC",
+      "description": "For dual-booting with Linux: Windows reads the motherboard clock as UTC, so the time stops jumping when you switch systems.",
+      "registry": [
+        { "path": "HKLM\\SYSTEM\\CurrentControlSet\\Control\\TimeZoneInformation", "name": "RealTimeIsUniversal", "type": "QWord", "on": "1", "off": "0" }
+      ]
+    },
+    {
+      "id": "prefer-ipv4", "group": "advanced", "restart": "reboot",
+      "name": "Prefer IPv4 over IPv6",
+      "description": "Keeps IPv6 on but makes Windows try IPv4 first, which fixes slow connections on some networks.",
+      "registry": [
+        { "path": "HKLM\\SYSTEM\\CurrentControlSet\\Services\\Tcpip6\\Parameters", "name": "DisabledComponents", "type": "DWord", "on": "32", "off": "0" }
+      ]
+    },
+    {
+      "id": "teredo", "group": "advanced", "restart": "reboot",
+      "name": "Turn off Teredo",
+      "description": "Turns off the Teredo IPv6 tunnel. Can lower latency in some games; Xbox party chat may need it.",
+      "registry": [
+        { "path": "HKLM\\SYSTEM\\CurrentControlSet\\Services\\Tcpip6\\Parameters", "name": "DisabledComponents", "type": "DWord", "on": "1", "off": "0" }
+      ]
+    },
+    {
+      "id": "ipv6-off", "group": "advanced", "restart": "reboot",
+      "name": "Turn off IPv6",
+      "description": "Turns IPv6 off on every network adapter. Only for networks where IPv6 causes trouble.",
+      "caution": "Some networks and apps need IPv6.",
+      "registry": [
+        { "path": "HKLM\\SYSTEM\\CurrentControlSet\\Services\\Tcpip6\\Parameters", "name": "DisabledComponents", "type": "DWord", "on": "255", "off": "0" }
+      ]
+    },
+    {
+      "id": "unsigned-rdp", "group": "advanced",
+      "name": "Skip the unsigned RDP file warning",
+      "description": "Stops Remote Desktop asking for confirmation every time you open a .rdp file that isn't signed.",
+      "registry": [
+        { "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows NT\\Terminal Services\\Client", "name": "RedirectionWarningDialogVersion", "type": "DWord", "on": "1", "off": null },
+        { "path": "HKCU\\SOFTWARE\\Microsoft\\Terminal Server Client", "name": "RdpLaunchConsentAccepted", "type": "DWord", "on": "1", "off": null }
+      ]
+    },
+    {
+      "id": "razer-block", "group": "advanced",
+      "name": "Block Razer software auto-install",
+      "description": "Stops Razer Synapse installing itself when you plug in a Razer device, and stops Windows fetching device installers through Windows Update.",
+      "registry": [
+        { "path": "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\DriverSearching", "name": "SearchOrderConfig", "type": "DWord", "on": "0", "off": "1" },
+        { "path": "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Device Installer", "name": "DisableCoInstallers", "type": "DWord", "on": "1", "off": "0" }
+      ]
+    },
+    {
+      "id": "logi-block", "group": "advanced",
+      "name": "Block Logitech Download Assistant",
+      "description": "Stops the Logitech Download Assistant installing and nagging, by locking its folder.",
+      "probe": "logi-block"
+    },
+    {
+      "id": "adobe-block", "group": "advanced", "kind": "action",
+      "name": "Block Adobe licence checks (hosts file)",
+      "description": "Adds a community block list of Adobe activation and telemetry servers to the hosts file, between PAX markers so undo removes exactly those lines. Downloads the list from GitHub.",
+      "caution": "Adobe apps may stop signing in or updating."
+    },
+
+    { "id": "dark-mode", "group": "preference", "restart": "refresh", "default": false,
+      "name": "Dark mode", "description": "Dark theme for Windows and apps.",
+      "registry": [
+        { "path": "HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize", "name": "AppsUseLightTheme", "type": "DWord", "on": "0", "off": "1" },
+        { "path": "HKCU\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize", "name": "SystemUsesLightTheme", "type": "DWord", "on": "0", "off": "1" }
+      ] },
+    { "id": "show-extensions", "group": "preference", "restart": "explorer", "default": false,
+      "name": "Show file extensions", "description": "Explorer shows .exe, .txt and so on after every file name.",
+      "registry": [ { "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "name": "HideFileExt", "type": "DWord", "on": "0", "off": "1" } ] },
+    { "id": "show-hidden", "group": "preference", "restart": "explorer", "default": false,
+      "name": "Show hidden files", "description": "Explorer shows hidden files and folders.",
+      "registry": [ { "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "name": "Hidden", "type": "DWord", "on": "1", "off": "2" } ] },
+    { "id": "taskbar-center", "group": "preference", "restart": "explorer", "default": true,
+      "name": "Centre taskbar icons", "description": "Off puts the Start button and icons on the left, like Windows 10.",
+      "registry": [ { "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "name": "TaskbarAl", "type": "DWord", "on": "1", "off": "0" } ] },
+    { "id": "taskbar-search", "group": "preference", "default": true,
+      "name": "Search icon on the taskbar", "description": "Shows the search button next to Start.",
+      "registry": [ { "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Search", "name": "SearchboxTaskbarMode", "type": "DWord", "on": "1", "off": "0" } ] },
+    { "id": "task-view", "group": "preference", "default": true,
+      "name": "Task View button on the taskbar", "description": "Shows the Task View (virtual desktops) button.",
+      "registry": [ { "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "name": "ShowTaskViewButton", "type": "DWord", "on": "1", "off": "0" } ] },
+    { "id": "start-recommendations", "group": "preference", "restart": "explorer", "default": true,
+      "name": "Start menu recommendations", "description": "Off hides the Recommended section (recent files and promoted apps) in Start.",
+      "registry": [
+        { "path": "HKLM\\SOFTWARE\\Microsoft\\PolicyManager\\current\\device\\Start", "name": "HideRecommendedSection", "type": "DWord", "on": "0", "off": "1" },
+        { "path": "HKLM\\SOFTWARE\\Microsoft\\PolicyManager\\current\\device\\Education", "name": "IsEducationEnvironment", "type": "DWord", "on": "0", "off": "1" },
+        { "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\Explorer", "name": "HideRecommendedSection", "type": "DWord", "on": "0", "off": "1" }
+      ] },
+    { "id": "bing-search", "group": "preference", "default": true,
+      "name": "Bing results in Start search", "description": "Off keeps Start searches on this PC only.",
+      "registry": [ { "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Search", "name": "BingSearchEnabled", "type": "DWord", "on": "1", "off": "0" } ] },
+    { "id": "battery-percent", "group": "preference", "default": false,
+      "name": "Battery percentage in the taskbar", "description": "Shows the charge level next to the battery icon (laptops).",
+      "registry": [ { "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced", "name": "IsBatteryPercentageEnabled", "type": "DWord", "on": "1", "off": null } ] },
+    { "id": "scrollbars", "group": "preference", "default": false,
+      "name": "Always show scroll bars", "description": "Scroll bars stay full width instead of shrinking away.",
+      "registry": [ { "path": "HKCU\\Control Panel\\Accessibility", "name": "DynamicScrollbars", "type": "DWord", "on": "0", "off": "1" } ] },
+    { "id": "mouse-acceleration", "group": "preference", "default": true,
+      "name": "Mouse acceleration", "description": "Enhance pointer precision. Most gamers turn it off for consistent aim.",
+      "registry": [
+        { "path": "HKCU\\Control Panel\\Mouse", "name": "MouseSpeed", "type": "String", "on": "1", "off": "0" },
+        { "path": "HKCU\\Control Panel\\Mouse", "name": "MouseThreshold1", "type": "String", "on": "6", "off": "0" },
+        { "path": "HKCU\\Control Panel\\Mouse", "name": "MouseThreshold2", "type": "String", "on": "10", "off": "0" }
+      ] },
+    { "id": "sticky-keys", "group": "preference", "default": true,
+      "name": "Sticky Keys shortcut", "description": "Off stops five Shift presses opening the Sticky Keys prompt in the middle of a game.",
+      "registry": [ { "path": "HKCU\\Control Panel\\Accessibility\\StickyKeys", "name": "Flags", "type": "String", "on": "510", "off": "506" } ] },
+    { "id": "num-lock", "group": "preference", "default": false,
+      "name": "Num Lock on at start-up", "description": "Num Lock is on at the sign-in screen and after you sign in.",
+      "registry": [
+        { "path": "HKU\\.DEFAULT\\Control Panel\\Keyboard", "name": "InitialKeyboardIndicators", "type": "String", "on": "2", "off": "0" },
+        { "path": "HKCU\\Control Panel\\Keyboard", "name": "InitialKeyboardIndicators", "type": "String", "on": "2", "off": "0" }
+      ] },
+    { "id": "snapping", "group": "preference", "default": true, "restart": "signout",
+      "name": "Window snapping", "description": "Drag windows to screen edges to snap them, and the snap layouts menu.",
+      "registry": [ { "path": "HKCU\\Control Panel\\Desktop", "name": "WindowArrangementActive", "type": "String", "on": "1", "off": "0" } ] },
+    { "id": "game-mode", "group": "preference", "default": true,
+      "name": "Game Mode", "description": "Windows gives the game you're playing priority and holds back updates while it runs.",
+      "registry": [
+        { "path": "HKCU\\Software\\Microsoft\\GameBar", "name": "AllowAutoGameMode", "type": "DWord", "on": "1", "off": "0" },
+        { "path": "HKCU\\Software\\Microsoft\\GameBar", "name": "AutoGameModeEnabled", "type": "DWord", "on": "1", "off": "0" }
+      ] },
+    { "id": "long-paths", "group": "preference", "default": false,
+      "name": "Long file paths", "description": "Lets programs that support it use paths longer than 260 characters.",
+      "registry": [ { "path": "HKLM\\SYSTEM\\CurrentControlSet\\Control\\FileSystem", "name": "LongPathsEnabled", "type": "DWord", "on": "1", "off": "0" } ] },
+    { "id": "settings-home", "group": "preference", "default": true,
+      "name": "Settings Home page", "description": "Off hides the Home page (with its Microsoft account promotions) in Settings.",
+      "registry": [ { "path": "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\Explorer", "name": "SettingsPageVisibility", "type": "String", "on": null, "off": "hide:home" } ] },
+    { "id": "lock-screen", "group": "preference", "default": true,
+      "name": "Lock screen", "description": "Off goes straight to the sign-in box, without the picture and clock first.",
+      "registry": [ { "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\Personalization", "name": "NoLockScreen", "type": "DWord", "on": null, "off": "1" } ] },
+    { "id": "logon-blur", "group": "preference", "default": true,
+      "name": "Blurred sign-in background", "description": "The frosted-glass blur behind the sign-in box.",
+      "registry": [ { "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\System", "name": "DisableAcrylicBackgroundOnLogon", "type": "DWord", "on": "0", "off": "1" } ] },
+    { "id": "verbose-logon", "group": "preference", "default": false,
+      "name": "Detailed sign-in and shutdown messages", "description": "Shows what Windows is doing (\"Applying user settings\") while it signs in and shuts down.",
+      "registry": [ { "path": "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System", "name": "VerboseStatus", "type": "DWord", "on": "1", "off": "0" } ] },
+    { "id": "detailed-bsod", "group": "preference", "default": false,
+      "name": "Detailed blue screens", "description": "Blue screens show the technical error details instead of the sad face.",
+      "registry": [
+        { "path": "HKLM\\SYSTEM\\CurrentControlSet\\Control\\CrashControl", "name": "DisplayParameters", "type": "DWord", "on": "1", "off": "0" },
+        { "path": "HKLM\\SYSTEM\\CurrentControlSet\\Control\\CrashControl", "name": "DisableEmoticon", "type": "DWord", "on": "1", "off": "0" }
+      ] },
+    { "id": "new-outlook", "group": "preference", "default": true,
+      "name": "New Outlook", "description": "Off keeps classic Outlook, hides the Try the new Outlook switch and stops the automatic move.",
+      "registry": [
+        { "path": "HKCU\\SOFTWARE\\Microsoft\\Office\\16.0\\Outlook\\Preferences", "name": "UseNewOutlook", "type": "DWord", "on": "1", "off": "0" },
+        { "path": "HKCU\\Software\\Microsoft\\Office\\16.0\\Outlook\\Options\\General", "name": "HideNewOutlookToggle", "type": "DWord", "on": "0", "off": "1" },
+        { "path": "HKCU\\Software\\Policies\\Microsoft\\Office\\16.0\\Outlook\\Options\\General", "name": "DoNewOutlookAutoMigration", "type": "DWord", "on": null, "off": "0" },
+        { "path": "HKCU\\Software\\Policies\\Microsoft\\Office\\16.0\\Outlook\\Preferences", "name": "NewOutlookMigrationUserSetting", "type": "DWord", "on": null, "off": "0" }
+      ] },
+    { "id": "standby-network", "group": "preference", "default": true,
+      "name": "Network during Modern Standby", "description": "Keeps Wi-Fi and Ethernet connected while a Modern Standby laptop sleeps on mains power.",
+      "registry": [ { "path": "HKCU\\SOFTWARE\\Policies\\Microsoft\\Power\\PowerSettings\\f15576e8-98b7-4186-b944-eafa664402d9", "name": "ACSettingIndex", "type": "DWord", "on": "1", "off": "0" } ] },
+    { "id": "s3-sleep", "group": "preference", "default": false, "restart": "reboot",
+      "name": "Classic S3 sleep", "description": "Uses traditional sleep instead of Modern Standby, on PCs whose firmware still supports it.",
+      "registry": [ { "path": "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Power", "name": "PlatformAoAcOverride", "type": "DWord", "on": "0", "off": null } ] },
+
+    {
+      "id": "mpo", "group": "preference", "kind": "choice", "default": "Enabled",
+      "name": "Multiplane overlay",
+      "description": "Layered video composition. Turning it off can fix flicker and black screens with some graphics drivers. Applies straight away.",
+      "choices": [
+        { "name": "Enabled", "description": "Windows' default.", "registry": [
+          { "path": "HKLM\\SOFTWARE\\Microsoft\\Windows\\Dwm", "name": "OverlayTestMode", "type": "DWord", "value": null },
+          { "path": "HKLM\\SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers", "name": "DisableOverlays", "type": "DWord", "value": null } ] },
+        { "name": "Off (compatible)", "description": "OverlayTestMode 5, the gentler method.", "registry": [
+          { "path": "HKLM\\SOFTWARE\\Microsoft\\Windows\\Dwm", "name": "OverlayTestMode", "type": "DWord", "value": "5" },
+          { "path": "HKLM\\SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers", "name": "DisableOverlays", "type": "DWord", "value": null } ] },
+        { "name": "Fully off", "description": "OverlayTestMode 5 and DisableOverlays 1.", "registry": [
+          { "path": "HKLM\\SOFTWARE\\Microsoft\\Windows\\Dwm", "name": "OverlayTestMode", "type": "DWord", "value": "5" },
+          { "path": "HKLM\\SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers", "name": "DisableOverlays", "type": "DWord", "value": "1" } ] }
+      ]
+    },
+
+    {
+      "id": "updates", "group": "updates", "kind": "choice", "default": "Default",
+      "name": "Windows Update",
+      "description": "How Windows Update behaves on this PC.",
+      "choices": [
+        {
+          "name": "Default", "description": "Windows' own behaviour: updates, drivers and restarts as Microsoft ships them. Also clears policies left by other tweak tools and turns the update services back on.",
+          "registry": [
+            { "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU", "name": "NoAutoUpdate", "type": "DWord", "value": null },
+            { "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU", "name": "AUOptions", "type": "DWord", "value": null },
+            { "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU", "name": "AUPowerManagement", "type": "DWord", "value": null },
+            { "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate", "name": "ExcludeWUDriversInQualityUpdate", "type": "DWord", "value": null },
+            { "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate", "name": "DeferFeatureUpdates", "type": "DWord", "value": null },
+            { "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate", "name": "DeferFeatureUpdatesPeriodInDays", "type": "DWord", "value": null },
+            { "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate", "name": "DeferQualityUpdates", "type": "DWord", "value": null },
+            { "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate", "name": "DeferQualityUpdatesPeriodInDays", "type": "DWord", "value": null },
+            { "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\DriverSearching", "name": "DontPromptForWindowsUpdate", "type": "DWord", "value": null },
+            { "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\DriverSearching", "name": "DontSearchWindowsUpdate", "type": "DWord", "value": null },
+            { "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\DriverSearching", "name": "DriverUpdateWizardWuSearchEnabled", "type": "DWord", "value": null },
+            { "path": "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\DeliveryOptimization\\Config", "name": "DODownloadMode", "type": "DWord", "value": null }
+          ],
+          "services": [ { "name": "BITS", "start": "Manual" }, { "name": "wuauserv", "start": "Manual" }, { "name": "UsoSvc", "start": "Automatic" } ]
+        },
+        {
+          "name": "Security only", "description": "Recommended. Security fixes arrive 4 days after release, feature updates wait a year, drivers don't come through Windows Update and the PC doesn't restart while you're signed in.",
+          "registry": [
+            { "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU", "name": "NoAutoUpdate", "type": "DWord", "value": null },
+            { "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU", "name": "AUOptions", "type": "DWord", "value": "3" },
+            { "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU", "name": "AUPowerManagement", "type": "DWord", "value": "0" },
+            { "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate", "name": "ExcludeWUDriversInQualityUpdate", "type": "DWord", "value": "1" },
+            { "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate", "name": "DeferFeatureUpdates", "type": "DWord", "value": "1" },
+            { "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate", "name": "DeferFeatureUpdatesPeriodInDays", "type": "DWord", "value": "365" },
+            { "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate", "name": "DeferQualityUpdates", "type": "DWord", "value": "1" },
+            { "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate", "name": "DeferQualityUpdatesPeriodInDays", "type": "DWord", "value": "4" },
+            { "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\DriverSearching", "name": "DontPromptForWindowsUpdate", "type": "DWord", "value": "1" },
+            { "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\DriverSearching", "name": "DontSearchWindowsUpdate", "type": "DWord", "value": "1" },
+            { "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\DriverSearching", "name": "DriverUpdateWizardWuSearchEnabled", "type": "DWord", "value": "0" },
+            { "path": "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\DeliveryOptimization\\Config", "name": "DODownloadMode", "type": "DWord", "value": null }
+          ],
+          "services": [ { "name": "BITS", "start": "Manual" }, { "name": "wuauserv", "start": "Manual" }, { "name": "UsoSvc", "start": "Automatic" } ]
+        },
+        {
+          "name": "Off", "description": "No updates at all, including security fixes. Stops and disables the update services and their scheduled tasks. Only for offline or test PCs; switch back to Default to update again.",
+          "caution": "Your PC stops getting security fixes.",
+          "registry": [
+            { "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU", "name": "NoAutoUpdate", "type": "DWord", "value": "1" },
+            { "path": "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU", "name": "AUOptions", "type": "DWord", "value": "1" },
+            { "path": "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\DeliveryOptimization\\Config", "name": "DODownloadMode", "type": "DWord", "value": "0" }
+          ],
+          "services": [ { "name": "BITS", "start": "Disabled" }, { "name": "wuauserv", "start": "Disabled" }, { "name": "UsoSvc", "start": "Disabled" } ]
+        }
+      ]
+    }
+  ]
+}

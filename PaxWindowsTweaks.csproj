@@ -1,0 +1,43 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>PaxWindowsTweaks</RootNamespace>
+    <AssemblyName>PaxWindowsTweaks</AssemblyName>
+    <Version>1.0.0</Version>
+    <Product>PAX Windows Tweaks</Product>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <!-- Rendered by the app's write-icon option (see README); a fresh clone builds without it. -->
+    <ApplicationIcon Condition="Exists('Assets\PaxWindowsTweaks.ico')">Assets\PaxWindowsTweaks.ico</ApplicationIcon>
+    <ConcurrentGarbageCollection>false</ConcurrentGarbageCollection>
+    <TieredPGO>false</TieredPGO>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="12.1.4" />
+    <PackageReference Include="Avalonia.Desktop" Version="12.1.4" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="12.1.4" />
+    <!-- Only for the self-test: renders the window without creating one on the screen. -->
+    <PackageReference Include="Avalonia.Headless" Version="12.1.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Assets\tweaks.json" LogicalName="tweaks.json" />
+    <EmbeddedResource Include="Assets\apps.json" LogicalName="apps.json" />
+    <EmbeddedResource Include="Assets\scripts\*.ps1" LogicalName="scripts.%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <Target Name="TrimPublish" AfterTargets="Publish">
+    <ItemGroup>
+      <_PruneFiles Include="$(PublishDir)*.pdb" />
+    </ItemGroup>
+    <Delete Files="@(_PruneFiles)" />
+  </Target>
+
+</Project>
