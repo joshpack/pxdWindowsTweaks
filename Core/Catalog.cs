@@ -2,7 +2,7 @@ using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace PaxWindowsTweaks.Core;
+namespace pxdWindowsTweaks.Core;
 
 /// <summary>One registry value a tweak sets. <c>On</c>/<c>Off</c> null means "the value is deleted".</summary>
 public sealed class RegEntry

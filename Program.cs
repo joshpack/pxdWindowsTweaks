@@ -1,22 +1,22 @@
 using Avalonia;
 using Avalonia.Headless;
 using Avalonia.Threading;
-using PaxWindowsTweaks.Core;
+using pxdWindowsTweaks.Core;
 
-namespace PaxWindowsTweaks;
+namespace pxdWindowsTweaks;
 
 internal static class Program
 {
-    public const string AppId = "PaxWindowsTweaks";
+    public const string AppId = "pxdWindowsTweaks";
 
     /// <summary>Why the app runs without administrator rights, for the notice in the window (null when elevated).</summary>
     public static string? LimitedReason { get; private set; }
 
-    /// <summary>%APPDATA%\PaxWindowsTweaks (window placement, undo records, logs), or PAXWT_DATA (tests).</summary>
+    /// <summary>%APPDATA%\pxdWindowsTweaks (window placement, undo records, logs), or PXDWT_DATA (tests).</summary>
     public static string DataFolder =>
-        Environment.GetEnvironmentVariable("PAXWT_DATA") is { Length: > 0 } custom
+        Environment.GetEnvironmentVariable("PXDWT_DATA") is { Length: > 0 } custom
             ? custom
-            : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "PaxWindowsTweaks");
+            : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "pxdWindowsTweaks");
 
     private static bool Has(string[] args, string flag) => args.Any(a => a.Equals(flag, StringComparison.OrdinalIgnoreCase));
 
@@ -41,9 +41,9 @@ internal static class Program
             SelfTest.Dir = Path.GetFullPath(testDir);
             SelfTest.Sample = Has(args, "--sample");
             Directory.CreateDirectory(SelfTest.Dir);
-            if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("PAXWT_DATA")))
-                Environment.SetEnvironmentVariable("PAXWT_DATA", Path.Combine(SelfTest.Dir, "data"));
-            PaxStandard.PaxChrome.Configure(AppId, DataFolder);
+            if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("PXDWT_DATA")))
+                Environment.SetEnvironmentVariable("PXDWT_DATA", Path.Combine(SelfTest.Dir, "data"));
+            pxdStandard.pxdChrome.Configure(AppId, DataFolder);
             AppBuilder.Configure<App>()
                 .UseSkia()
                 .UseHeadless(new AvaloniaHeadlessPlatformOptions { UseHeadlessDrawing = false })
@@ -57,6 +57,9 @@ internal static class Program
             Dispatcher.UIThread.MainLoop(done.Token);
             return SelfTest.ExitCode;
         }
+
+        // Undo records, logs and placement kept under the app's former name move before anything reads them.
+        Migration.Run();
 
         if (After(args, "--apply") is { } profile)
             return ApplyProfile(args, profile);
@@ -91,7 +94,7 @@ internal static class Program
         if (!SingleInstance.Claim(SingleInstance.Name(AppId), args))
             return 0;
 
-        PaxStandard.PaxChrome.Configure(AppId, DataFolder);
+        pxdStandard.pxdChrome.Configure(AppId, DataFolder);
         BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
         return 0;
     }
@@ -123,7 +126,7 @@ internal static class Program
         try
         {
             var prof = TweakProfile.Load(file);
-            Log($"PAX Windows Tweaks: applying {file}");
+            Log($"pxd Windows Tweaks: applying {file}");
             var failed = prof.RunAsync(Log).GetAwaiter().GetResult();
             Log(failed == 0 ? "Finished." : $"Finished with {failed} problem(s).");
             return failed == 0 ? 0 : 2;

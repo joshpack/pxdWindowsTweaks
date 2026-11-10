@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace PaxWindowsTweaks.Core;
+namespace pxdWindowsTweaks.Core;
 
 /// <summary>A built-in Store app that can be removed.</summary>
 public sealed record BloatApp(string Package, string Name, bool Recommended, string Note = "");

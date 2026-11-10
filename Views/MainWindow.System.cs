@@ -4,9 +4,9 @@ using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
-using PaxWindowsTweaks.Core;
+using pxdWindowsTweaks.Core;
 
-namespace PaxWindowsTweaks.Views;
+namespace pxdWindowsTweaks.Views;
 
 public sealed partial class MainWindow
 {
@@ -323,7 +323,7 @@ public sealed partial class MainWindow
             var file = await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
             {
                 Title = "Save log",
-                SuggestedFileName = $"PaxWindowsTweaks-log-{DateTime.Now:yyyyMMdd-HHmmss}.txt",
+                SuggestedFileName = $"pxdWindowsTweaks-log-{DateTime.Now:yyyyMMdd-HHmmss}.txt",
                 FileTypeChoices = [new FilePickerFileType("Text file") { Patterns = ["*.txt"] }],
             });
             if (file?.TryGetLocalPath() is { } path)
@@ -345,6 +345,6 @@ public sealed partial class MainWindow
             Shell.Open(Engine.UndoFolder);
         };
         _pages["Log"] = PageOf(Header("Log", "Everything the app changed and what each tool printed, this session.", undoFolder, clear, save, copy), _logBox);
-        Log($"PAX Windows Tweaks {typeof(MainWindow).Assembly.GetName().Version?.ToString(3)}, {(_elevated ? "administrator" : "standard user")}, {Environment.OSVersion.VersionString}");
+        Log($"pxd Windows Tweaks {typeof(MainWindow).Assembly.GetName().Version?.ToString(3)}, {(_elevated ? "administrator" : "standard user")}, {Environment.OSVersion.VersionString}");
     }
 }

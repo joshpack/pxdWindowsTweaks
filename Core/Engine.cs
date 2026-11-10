@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace PaxWindowsTweaks.Core;
+namespace pxdWindowsTweaks.Core;
 
 public enum TweakState
 {
@@ -40,7 +40,7 @@ public sealed class SavedService
 /// <summary>Reads tweak states and applies, undoes and switches them.</summary>
 public static class Engine
 {
-    /// <summary>%APPDATA%\PaxWindowsTweaks\undo (or under PAXWT_DATA).</summary>
+    /// <summary>%APPDATA%\pxdWindowsTweaks\undo (or under PXDWT_DATA).</summary>
     public static string UndoFolder => Path.Combine(Program.DataFolder, "undo");
 
     // ---------- State ----------

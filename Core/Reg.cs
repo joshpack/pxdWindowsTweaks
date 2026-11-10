@@ -1,7 +1,7 @@
 using System.Globalization;
 using Microsoft.Win32;
 
-namespace PaxWindowsTweaks.Core;
+namespace pxdWindowsTweaks.Core;
 
 /// <summary>What a registry value holds right now (or that it's missing).</summary>
 public sealed record RegState(bool Exists, string? Kind, string? Data)

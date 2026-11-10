@@ -364,7 +364,7 @@
     {
       "id": "adobe-block", "group": "advanced", "kind": "action",
       "name": "Block Adobe licence checks (hosts file)",
-      "description": "Adds a community block list of Adobe activation and telemetry servers to the hosts file, between PAX markers so undo removes exactly those lines. Downloads the list from GitHub.",
+      "description": "Adds a community block list of Adobe activation and telemetry servers to the hosts file, between pxd markers so undo removes exactly those lines. Downloads the list from GitHub.",
       "caution": "Adobe apps may stop signing in or updating."
     },
 

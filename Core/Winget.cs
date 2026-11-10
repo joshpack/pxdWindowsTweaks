@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace PaxWindowsTweaks.Core;
+namespace pxdWindowsTweaks.Core;
 
 /// <summary>Installs, upgrades and removes programs with Windows' own package manager.</summary>
 public static class Winget
@@ -32,7 +32,7 @@ public static class Winget
     public static async Task<HashSet<string>> InstalledAsync(CancellationToken ct = default)
     {
         if (FakeInstalled is { } fake) return new HashSet<string>(fake, StringComparer.OrdinalIgnoreCase);
-        var file = Path.Combine(Path.GetTempPath(), "PaxWindowsTweaks", $"winget-{Guid.NewGuid():N}.json");
+        var file = Path.Combine(Path.GetTempPath(), "pxdWindowsTweaks", $"winget-{Guid.NewGuid():N}.json");
         Directory.CreateDirectory(Path.GetDirectoryName(file)!);
         try
         {

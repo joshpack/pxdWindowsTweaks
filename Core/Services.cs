@@ -1,6 +1,6 @@
 using System.Diagnostics;
 
-namespace PaxWindowsTweaks.Core;
+namespace pxdWindowsTweaks.Core;
 
 /// <summary>Service start types, read from the registry and changed through sc.exe so the change is live.</summary>
 public static class Services

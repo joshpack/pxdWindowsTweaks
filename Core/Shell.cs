@@ -2,7 +2,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace PaxWindowsTweaks.Core;
+namespace pxdWindowsTweaks.Core;
 
 /// <summary>Runs PowerShell scripts and console tools, streaming their output line by line.</summary>
 public static class Shell
@@ -22,7 +22,7 @@ public static class Shell
     public static async Task<int> RunScriptAsync(string script, Action<string> log, CancellationToken ct = default)
     {
         if (Fake is { } fake) return fake(script);
-        var dir = Path.Combine(Path.GetTempPath(), "PaxWindowsTweaks");
+        var dir = Path.Combine(Path.GetTempPath(), "pxdWindowsTweaks");
         Directory.CreateDirectory(dir);
         var file = Path.Combine(dir, $"run-{Guid.NewGuid():N}.ps1");
         // UTF-8 with BOM: Windows PowerShell reads BOM-less files as the ANSI code page.

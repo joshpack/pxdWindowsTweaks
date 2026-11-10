@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace PaxWindowsTweaks.Core;
+namespace pxdWindowsTweaks.Core;
 
 /// <summary>
 /// A saved selection (Export / Import, and <c>--apply file.json</c>): tweaks to apply, preferences to set, apps to

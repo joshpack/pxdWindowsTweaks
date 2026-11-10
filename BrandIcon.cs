@@ -4,10 +4,10 @@ using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using ShapePath = Avalonia.Controls.Shapes.Path;
 
-namespace PaxWindowsTweaks;
+namespace pxdWindowsTweaks;
 
 /// <summary>
-/// PAX Windows Tweaks' icon: three settings sliders with neon-green knobs on an indigo tile.
+/// pxd Windows Tweaks' icon: three settings sliders with neon-green knobs on an indigo tile.
 /// Drawn from vector shapes so it stays crisp at every size; used for the window and the exe's .ico.
 /// </summary>
 public static class BrandIcon

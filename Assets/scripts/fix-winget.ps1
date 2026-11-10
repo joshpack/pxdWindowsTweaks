@@ -4,7 +4,7 @@ try {
     Write-Host 'App Installer re-registered.'
 } catch {
     Write-Host "Re-registering failed ($($_.Exception.Message)); downloading the latest App Installer..."
-    $tmp = Join-Path $env:TEMP 'PaxWindowsTweaks-winget.msixbundle'
+    $tmp = Join-Path $env:TEMP 'pxdWindowsTweaks-winget.msixbundle'
     Invoke-WebRequest -Uri 'https://aka.ms/getwinget' -OutFile $tmp -UseBasicParsing
     Add-AppxPackage -Path $tmp -ForceApplicationShutdown
     Remove-Item $tmp -Force -ErrorAction SilentlyContinue

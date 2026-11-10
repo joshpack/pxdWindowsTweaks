@@ -7,13 +7,13 @@ using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
-using PaxWindowsTweaks.Core;
+using pxdWindowsTweaks.Core;
 
-namespace PaxWindowsTweaks.Views;
+namespace pxdWindowsTweaks.Views;
 
 /// <summary>
 /// The whole app: a sidebar of pages (Tweaks, Preferences, Debloat, Install apps, Features &amp; fixes, Windows Update,
-/// Network &amp; power, Log) and a status bar that shows what's running. Built in code, PAX neon theme.
+/// Network &amp; power, Log) and a status bar that shows what's running. Built in code, pxd neon theme.
 /// </summary>
 public sealed partial class MainWindow : Window
 {
@@ -59,7 +59,7 @@ public sealed partial class MainWindow : Window
     public MainWindow(bool? elevated, bool autoLoad)
     {
         _elevated = elevated ?? Elevation.IsElevated;
-        Title = _elevated ? "PAX Windows Tweaks (Administrator)" : "PAX Windows Tweaks";
+        Title = _elevated ? "pxd Windows Tweaks (Administrator)" : "pxd Windows Tweaks";
         Icon = BrandIcon.Window();
         Width = 1180;
         Height = 780;
@@ -112,7 +112,7 @@ public sealed partial class MainWindow : Window
         main.Children.Add(bar);
         _status.Text = "Ready.";
 
-        Content = PaxStandard.PaxChrome.Wrap(this, body, Title, BrandIcon.Render(36));
+        Content = pxdStandard.pxdChrome.Wrap(this, body, Title, BrandIcon.Render(36));
         ShowPage("Tweaks");
 
         if (Program.LimitedReason is { } why && elevated is null)
@@ -151,7 +151,7 @@ public sealed partial class MainWindow : Window
         var head = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10, Margin = new Thickness(16, 16, 16, 18) };
         head.Children.Add(new Border { Width = 36, Height = 36, Child = new Image { Source = BrandIcon.Render(72), Width = 36, Height = 36 } });
         var names = new StackPanel { VerticalAlignment = VerticalAlignment.Center };
-        names.Children.Add(new TextBlock { Text = "PAX WINDOWS", FontSize = 13, FontWeight = FontWeight.Bold, LetterSpacing = 1.4, Classes = { "neon" } });
+        names.Children.Add(new TextBlock { Text = "pxd WINDOWS", FontSize = 13, FontWeight = FontWeight.Bold, LetterSpacing = 1.4, Classes = { "neon" } });
         names.Children.Add(new TextBlock { Text = "TWEAKS", FontSize = 13, FontWeight = FontWeight.Bold, LetterSpacing = 1.4, Classes = { "neon" } });
         head.Children.Add(names);
         DockPanel.SetDock(head, Dock.Top);
@@ -403,13 +403,13 @@ public sealed partial class MainWindow : Window
             var file = await StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
             {
                 Title = "Export selection",
-                SuggestedFileName = $"PaxWindowsTweaks-{Environment.MachineName}.json",
-                FileTypeChoices = [new FilePickerFileType("PAX Windows Tweaks selection") { Patterns = ["*.json"] }],
+                SuggestedFileName = $"pxdWindowsTweaks-{Environment.MachineName}.json",
+                FileTypeChoices = [new FilePickerFileType("pxd Windows Tweaks selection") { Patterns = ["*.json"] }],
             });
             if (file?.TryGetLocalPath() is not { } path) return;
             p.Save(path);
             ShowNotice($"Saved {p.Tweaks.Count} tweak(s), {p.Preferences.Count + p.Choices.Count} preference(s), {p.Apps.Count} app(s), {p.RemoveApps.Count} app removal(s) and {p.Features.Count} feature(s) to {path}. " +
-                       "Import it on another PC, or run it there with PaxWindowsTweaks.exe --apply.", good: true);
+                       "Import it on another PC, or run it there with pxdWindowsTweaks.exe --apply.", good: true);
         }
         catch (Exception ex)
         {
@@ -425,7 +425,7 @@ public sealed partial class MainWindow : Window
             {
                 Title = "Import selection",
                 AllowMultiple = false,
-                FileTypeFilter = [new FilePickerFileType("PAX Windows Tweaks selection") { Patterns = ["*.json"] }],
+                FileTypeFilter = [new FilePickerFileType("pxd Windows Tweaks selection") { Patterns = ["*.json"] }],
             });
             if (files.FirstOrDefault()?.TryGetLocalPath() is not { } path) return;
             var p = TweakProfile.Load(path);

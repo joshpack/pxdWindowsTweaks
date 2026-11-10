@@ -3,9 +3,9 @@ using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Threading;
-using PaxWindowsTweaks.Core;
+using pxdWindowsTweaks.Core;
 
-namespace PaxWindowsTweaks.Views;
+namespace pxdWindowsTweaks.Views;
 
 public sealed partial class MainWindow
 {

@@ -2,7 +2,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Security.Principal;
 
-namespace PaxWindowsTweaks.Core;
+namespace pxdWindowsTweaks.Core;
 
 /// <summary>Nearly every tweak writes to HKLM or changes services, so the app asks for administrator rights at start.</summary>
 public static class Elevation
@@ -24,7 +24,7 @@ public static class Elevation
 
     public static ProcessStartInfo RestartInfo(string[] args) => new()
     {
-        FileName = Environment.ProcessPath ?? Path.Combine(AppContext.BaseDirectory, "PaxWindowsTweaks.exe"),
+        FileName = Environment.ProcessPath ?? Path.Combine(AppContext.BaseDirectory, "pxdWindowsTweaks.exe"),
         Arguments = string.Join(" ", args.Where(a => !a.Equals("--elevated", StringComparison.OrdinalIgnoreCase)).Select(Quote).Append("--elevated")),
         UseShellExecute = true,
         Verb = "runas",

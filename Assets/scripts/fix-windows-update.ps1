@@ -4,7 +4,7 @@ Remove-Item "$env:ProgramData\Microsoft\Network\Downloader\qmgr*.dat" -Force -Er
 $stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
 foreach ($d in "$env:SystemRoot\SoftwareDistribution", "$env:SystemRoot\System32\catroot2") {
     if (Test-Path $d) {
-        try { Rename-Item $d "$(Split-Path $d -Leaf).pax-$stamp" -ErrorAction Stop; Write-Host "Renamed $d (a fresh one is made)" }
+        try { Rename-Item $d "$(Split-Path $d -Leaf).pxd-$stamp" -ErrorAction Stop; Write-Host "Renamed $d (a fresh one is made)" }
         catch { Write-Host "Couldn't rename $d : $($_.Exception.Message)" }
     }
 }

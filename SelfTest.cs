@@ -6,10 +6,10 @@ using Avalonia.Headless;
 using Avalonia.LogicalTree;
 using Avalonia.Media.Imaging;
 using Avalonia.Threading;
-using PaxWindowsTweaks.Core;
-using PaxWindowsTweaks.Views;
+using pxdWindowsTweaks.Core;
+using pxdWindowsTweaks.Views;
 
-namespace PaxWindowsTweaks;
+namespace pxdWindowsTweaks;
 
 /// <summary>
 /// --self-test DIR [--sample]: checks the catalogs, reads every tweak's state on this PC (read only), applies and
@@ -35,7 +35,7 @@ internal static class SelfTest
 
     public static async Task RunAsync()
     {
-        R.AppendLine($"PAX Windows Tweaks {typeof(SelfTest).Assembly.GetName().Version?.ToString(3)} self-test, {(Sample ? "sample data" : "this PC")}, {DateTime.Now:yyyy-MM-dd HH:mm}");
+        R.AppendLine($"pxd Windows Tweaks {typeof(SelfTest).Assembly.GetName().Version?.ToString(3)} self-test, {(Sample ? "sample data" : "this PC")}, {DateTime.Now:yyyy-MM-dd HH:mm}");
         R.AppendLine($"Elevated: {Elevation.IsElevated}");
         R.AppendLine();
         try
@@ -49,6 +49,7 @@ internal static class SelfTest
             await Render();
             await Placement();
             SingleInstanceCheck();
+            await MigrationChecks();
         }
         catch (Exception ex)
         {
@@ -59,6 +60,113 @@ internal static class SelfTest
         R.AppendLine(_failed == 0 ? "RESULT: all checks passed" : $"RESULT: {_failed} check(s) FAILED");
         ExitCode = _failed == 0 ? 0 : 1;
         await File.WriteAllTextAsync(Path.Combine(Dir!, "report.txt"), R.ToString());
+    }
+
+    // ---------- Migration from the former name (temp folders and files only) ----------
+
+    private static async Task MigrationChecks()
+    {
+        R.AppendLine("== Migration from the former name (temp folders, faked task scheduler) ==");
+        var root = Path.Combine(Dir!, "migrate");
+        if (Directory.Exists(root))
+            Directory.Delete(root, recursive: true);
+        var former = pxdStandard.pxdMigrate.FormerName(Program.AppId);
+        var oldDir = Path.Combine(root, "appdata", former);
+        var newDir = Path.Combine(root, "appdata", Program.AppId);
+        Directory.CreateDirectory(Path.Combine(oldDir, "undo"));
+        Directory.CreateDirectory(Path.Combine(oldDir, "logs"));
+        var rec = new UndoRecord
+        {
+            Id = "telemetry", AppliedAt = new DateTime(2026, 11, 7, 12, 0, 0),
+            Values = [new SavedValue { Path = @"HKLM\SOFTWARE\Policies\Microsoft\Windows\DataCollection", Name = "AllowTelemetry", Exists = true, Kind = "DWord", Data = "3" }],
+            Services = [new SavedService { Name = "DiagTrack", Start = "Automatic" }],
+        };
+        File.WriteAllText(Path.Combine(oldDir, "undo", "telemetry.json"), System.Text.Json.JsonSerializer.Serialize(rec, Catalog.Json));
+        File.WriteAllText(Path.Combine(oldDir, "logs", "apply-old.log"), "old log");
+        File.WriteAllText(Path.Combine(oldDir, "windows.json"), """{"main":{"X":1}}""");
+
+        var moved = Migration.DataFolder(Path.Combine(root, "appdata"));
+        var env = Environment.GetEnvironmentVariable("PXDWT_DATA");
+        UndoRecord? back;
+        try
+        {
+            Environment.SetEnvironmentVariable("PXDWT_DATA", newDir);
+            back = Engine.LoadUndo("telemetry");
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("PXDWT_DATA", env);
+        }
+
+        Check("Data folder moved to the new name (undo, logs, placement)", moved && !Directory.Exists(oldDir)
+            && File.Exists(Path.Combine(newDir, "logs", "apply-old.log")) && File.Exists(Path.Combine(newDir, "windows.json")));
+        Check("Undo records from the former version are found after the move", back is { Id: "telemetry" } && back.Values is [{ Data: "3" }] && back.Services is [{ Start: "Automatic" }]);
+        File.WriteAllText(Path.Combine(newDir, "windows.json"), """{"main":{"X":2}}""");
+        Check("Data folder: second run is a no-op", !Migration.DataFolder(Path.Combine(root, "appdata")) && File.ReadAllText(Path.Combine(newDir, "windows.json")).Contains("\"X\":2"));
+
+        // Registry backup task: Windows' task store is faked by a folder, the script by Shell.Fake.
+        var tasks = Path.Combine(root, "Tasks");
+        var brand = pxdStandard.pxdMigrate.FormerPrefix.ToUpperInvariant();
+        Directory.CreateDirectory(Path.Combine(tasks, brand));
+        File.WriteAllText(Path.Combine(tasks, brand, brand + " Registry Backup"), "<Task />");
+        var ran = new List<string>();
+        Shell.Fake = s => { lock (ran) ran.Add(s); return 0; };
+        try
+        {
+            var limited = await Migration.RegistryBackupTaskAsync(tasks, elevated: false);
+            Check("Task: left alone without administrator rights", !limited && ran.Count == 0);
+            var task = await Migration.RegistryBackupTaskAsync(tasks, elevated: true);
+            Check("Task: moved when elevated (register new from the old definition, remove old)", task && ran.Count == 1
+                && ran[0].Contains(@"-TaskPath '\pxd\' -TaskName 'pxd Registry Backup' -Xml") && ran[0].Contains("Unregister-ScheduledTask -TaskPath $oldPath"));
+            File.Delete(Path.Combine(tasks, brand, brand + " Registry Backup"));
+            ran.Clear();
+            Check("Task: second run (old task gone) is a no-op", !await Migration.RegistryBackupTaskAsync(tasks, elevated: true) && ran.Count == 0);
+        }
+        finally
+        {
+            Shell.Fake = null;
+        }
+
+        // The edited scripts parse (Windows PowerShell's parser; nothing is run).
+        var parseDir = Path.Combine(root, "parse");
+        Directory.CreateDirectory(parseDir);
+        File.WriteAllText(Path.Combine(parseDir, "task-migration.ps1"), Migration.TaskScript);
+        foreach (var n in new[] { "adobe-block.on.ps1", "adobe-block.off.ps1", "fix-registry-backup.ps1" })
+            File.WriteAllText(Path.Combine(parseDir, n), Catalog.Script(n)!);
+        var lines = new List<string>();
+        var code = await Shell.RunScriptAsync(
+            $"foreach ($f in Get-ChildItem '{parseDir}' -Filter *.ps1) {{ $e = $null; [void][System.Management.Automation.Language.Parser]::ParseFile($f.FullName, [ref]$null, [ref]$e); if ($e) {{ Write-Host \"$($f.Name): $($e[0].Message)\" }} else {{ Write-Host \"ok $($f.Name)\" }} }}",
+            l => lines.Add(l));
+        Check("Task migration and edited scripts parse", code == 0 && lines.Count(l => l.StartsWith("ok ")) == 4, string.Join(" | ", lines));
+
+        // Adobe hosts block written by the former version: a temp file stands in for the hosts file.
+        var hosts = Path.Combine(root, "hosts");
+        var oldBlock = $"\r\n# {brand} Windows Tweaks: Adobe block start\r\n0.0.0.0 example.adobe.test\r\n# {brand} Windows Tweaks: Adobe block end\r\n";
+        string? Redirected(string name)
+        {
+            var s = Catalog.Script(name)!;
+            const string real = @"Join-Path $env:SystemRoot 'System32\drivers\etc\hosts'";
+            if (!s.Contains(real)) return null;   // never run against the real hosts file
+            return s.Replace(real, $"'{hosts}'").Replace("ipconfig /flushdns | Out-Null", "")
+                .Replace("Invoke-RestMethod", "throw 'no download in the self-test'; Invoke-RestMethod");
+        }
+
+        File.WriteAllText(hosts, "127.0.0.1 localhost" + oldBlock);
+        var on = Redirected("adobe-block.on.ps1");
+        lines.Clear();
+        code = on is null ? -1 : await Shell.RunScriptAsync(on, l => lines.Add(l));
+        var text = File.ReadAllText(hosts);
+        Check("Adobe block from the former version counts as applied (markers renamed, nothing downloaded)",
+            code == 0 && !text.Contains(brand + " Windows") && text.Contains("# pxd Windows Tweaks: Adobe block start") && text.Contains("example.adobe.test"),
+            $"exit {code}: {string.Join(" | ", lines)}");
+
+        File.WriteAllText(hosts, "127.0.0.1 localhost" + oldBlock);
+        var off = Redirected("adobe-block.off.ps1");
+        lines.Clear();
+        code = off is null ? -1 : await Shell.RunScriptAsync(off, l => lines.Add(l));
+        text = File.ReadAllText(hosts);
+        Check("Undo removes an Adobe block written by the former version", code == 0 && text == "127.0.0.1 localhost", $"exit {code}: {string.Join(" | ", lines)}");
+        R.AppendLine();
     }
 
     // ---------- Catalog ----------
@@ -162,7 +270,7 @@ internal static class SelfTest
     private static async Task RoundTrip()
     {
         R.AppendLine("== Apply / undo (scratch registry key, faked services and scripts) ==");
-        var scratch = $@"Software\PaxWindowsTweaksSelfTest\{Guid.NewGuid():N}";
+        var scratch = $@"Software\pxdWindowsTweaksSelfTest\{Guid.NewGuid():N}";
         var scripts = new List<string>();
         Reg.Redirect = scratch;
         Shell.Fake = s =>
@@ -239,11 +347,11 @@ internal static class SelfTest
             Shell.Fake = null;
             Services.Fake = null;
             // Only the exact key this test made.
-            using var root = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\PaxWindowsTweaksSelfTest", true);
+            using var root = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\pxdWindowsTweaksSelfTest", true);
             root?.DeleteSubKeyTree(scratch.Split('\\').Last(), false);
             var empty = root is not null && root.SubKeyCount == 0;
             root?.Dispose();
-            if (empty) Microsoft.Win32.Registry.CurrentUser.DeleteSubKey(@"Software\PaxWindowsTweaksSelfTest", false);
+            if (empty) Microsoft.Win32.Registry.CurrentUser.DeleteSubKey(@"Software\pxdWindowsTweaksSelfTest", false);
         }
 
         Check("Scratch registry key removed", Microsoft.Win32.Registry.CurrentUser.OpenSubKey($@"{scratch}") is null);
@@ -256,8 +364,8 @@ internal static class SelfTest
     {
         R.AppendLine("== PowerShell runner (two harmless scripts, no window) ==");
         var lines = new List<string>();
-        var code = await Shell.RunScriptAsync("Write-Host 'hello from PAX'; Write-Output ([Environment]::Is64BitProcess)", l => lines.Add(l));
-        Check("Script runs and its output is read", code == 0 && lines.Contains("hello from PAX") && lines.Contains("True"), $"exit {code}: {string.Join(" | ", lines)}");
+        var code = await Shell.RunScriptAsync("Write-Host 'hello from pxd'; Write-Output ([Environment]::Is64BitProcess)", l => lines.Add(l));
+        Check("Script runs and its output is read", code == 0 && lines.Contains("hello from pxd") && lines.Contains("True"), $"exit {code}: {string.Join(" | ", lines)}");
         lines.Clear();
         code = await Shell.RunScriptAsync("throw 'expected failure'", l => lines.Add(l));
         Check("A failing script reports a non-zero exit and the error", code != 0 && lines.Any(l => l.Contains("expected failure")), $"exit {code}: {string.Join(" | ", lines)}");
@@ -376,7 +484,7 @@ internal static class SelfTest
         var all = window.GetLogicalDescendants().ToList();
         Check("Title bar: icon, name, three caption buttons", window.WindowDecorations == WindowDecorations.BorderOnly
                                                                 && all.OfType<TextBlock>().Any(t => t.Text == window.Title)
-                                                                && all.OfType<Button>().Count(b => b.Classes.Contains("pax-caption")) == 3);
+                                                                && all.OfType<Button>().Count(b => b.Classes.Contains("pxd-caption")) == 3);
         window.Close();
         Winget.FakeInstalled = null;
         SystemTools.FakeInstalledAppx = null;
@@ -401,7 +509,7 @@ internal static class SelfTest
         var file = Path.Combine(Program.DataFolder, "windows.json");
         if (File.Exists(file)) File.Delete(file);
         var a = OffScreen();
-        PaxStandard.PaxChrome.RememberPlacement(a, key);
+        pxdStandard.pxdChrome.RememberPlacement(a, key);
         a.Show();
         await Task.Delay(50);
         a.Width = 1000;
@@ -413,7 +521,7 @@ internal static class SelfTest
         var json = File.Exists(file) ? await File.ReadAllTextAsync(file) : "";
         Check("Placement saved", json.Contains("\"selftest\"") && json.Contains("\"Width\":1000") && json.Contains("\"Height\":640"), json);
         var b = OffScreen();
-        PaxStandard.PaxChrome.RememberPlacement(b, key);
+        pxdStandard.pxdChrome.RememberPlacement(b, key);
         Check("Placement restored (size), off-screen spot ignored", b.Width == 1000 && b.Height == 640 && b.Position == new PixelPoint(-30000, -30000), $"{b.Width}x{b.Height} at {b.Position}");
         R.AppendLine();
     }
@@ -421,7 +529,7 @@ internal static class SelfTest
     private static void SingleInstanceCheck()
     {
         R.AppendLine("== Single instance ==");
-        var name = "PaxWindowsTweaks-selftest-" + Guid.NewGuid().ToString("N")[..8];
+        var name = "pxdWindowsTweaks-selftest-" + Guid.NewGuid().ToString("N")[..8];
         string[]? got = null;
         using var done = new ManualResetEventSlim();
         using (SingleInstance.Listen(name, args => { got = args; done.Set(); }))
