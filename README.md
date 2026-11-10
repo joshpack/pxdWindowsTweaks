@@ -55,9 +55,11 @@
 **By hand:**
 
 1. Install the **[.NET 10 Runtime](https://dotnet.microsoft.com/download/dotnet/10.0)** (x64) if you don't have it.
-2. Download **`pxdWindowsTweaks-1.1.0-win-x64.zip`** from **[the latest release](https://github.com/joshpack/pxdWindowsTweaks/releases/latest)**.
+2. Download **`pxdWindowsTweaks-1.1.1-win-x64.zip`** from **[the latest release](https://github.com/joshpack/pxdWindowsTweaks/releases/latest)**.
 3. Unzip it somewhere permanent, for example `%USERPROFILE%\Apps\pxdWindowsTweaks`.
 4. Run `pxdWindowsTweaks.exe`. Windows asks for administrator rights, because most tweaks change machine-wide settings. Say No and it still opens, but only your own (HKCU) settings can change.
+
+Each time it starts, it checks for a newer release and installs it into its own folder before opening (a few seconds at most; it just opens when offline). `--apply` runs don't update. Set `PXD_NO_UPDATE=1` to turn that off.
 
 The exe isn't code-signed, so SmartScreen may warn the first time: choose **More info → Run anyway**.
 
